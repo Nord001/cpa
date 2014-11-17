@@ -1,97 +1,59 @@
-Yii 2 Advanced Application Template
+CPA
 ===================================
 
-Yii 2 Advanced Application Template is a skeleton Yii 2 application best for
-developing complex Web applications with multiple tiers.
-
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
-
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+Приложение построено на основе шаблона [yii2 advanced](http://www.yiiframework.com/doc-2.0/guide-tutorial-advanced-app.html)
 
 
-DIRECTORY STRUCTURE
+Требования
+------------
+
+Минимальное требование по этому шаблону приложения, поддержка PHP 5.4.0.
+
+
+Установка
+---------------
+
+Шаги по установке приложения
+
+1. Установить [Composer](http://getcomposer.org/) - PHP пакетный менеджер следит за актуальностью библиотек в папке vendor используя информацию из composer.json. Если Composer уже установлен, рекоммендуется его обновить: `composer self-update`.
+2. Установить [Bower](http://bower.io/) - Фронтэнд (JS CSS и т.д.) пакетный менеджер следит за актуальностью библиотек в папке vendor/bower используя информацию из bower.json
+3. Запустить комманду `php composer.phar install` (либо так: `composer install`).
+4. Запустить комманду `bower install`.
+5. Запустить комманду `init` для развертывания приложения в необходимом окружении (`dev` или `prod`).
+6. Создать базу данных и настроить `components['db']` конфигурацию в `common/config/main-local.php` соответственно.
+7. Применить миграции при помощи консольной комманды `yii migrate`. В БД будут созданы таблицы необходимые приложению.
+8. Установить DOCUMENT ROOT для вэб приложения на сервере в значение `/path/to/application/frontend/web/`.
+
+
+После установки будет возможность войти на сайт на странице - /site/login (admin/admin).
+
+
+Структура каталогов
 -------------------
 
 ```
 common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
+	config/				содержит общие файлы конфигурации
+	mail/				содержит шаблоны для отправки e-mails
+	models/				содержит классы моделей общие для всего проекта
+	tests/				содержит тесты для объектов , которые являются общими для всего проекта
 console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
+	config/				содержит файлы конфигурации для консольного приложения
+	controllers/		содержит консольные контроллеры (commands)
+	migrations/			содержит миграции БД
+	models/				содержит классы моделей специфичные для крнсоли
+	runtime/			содержит файлы генерируемые в процессе работы консольного приложения
+	tests/				содержит тесты для консольного прилодения
+data/					содержит вспомогательные файлы для БД используемые при разработке
 frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
-tests                    contains various tests for the advanced application
-    codeception/         contains tests developed with Codeception PHP Testing Framework
+	assets/				содержит используемы приложением JavaScript и CSS бандлы
+	config/				содержит файлы конфигурации
+	controllers/		содержит классы контроллеров приложения
+	models/				содержит классы моделей приложения
+	runtime/			содержит файлы генерируемые в процессе работы приложения
+	tests/				содержит тесты для приложения
+	views/				содержит файла вида и шаблоны
+	web/				webroot
+vendor/					содержит сторонние пакеты необходимые для работы проекта
+environments/			содержит шаблоны вариантов среды развертывания (используестя при запуске init)
 ```
-
-
-REQUIREMENTS
-------------
-
-The minimum requirement by this application template that your Web server supports PHP 5.4.0.
-
-
-INSTALLATION
-------------
-
-### Install from an Archive File
-
-Extract the archive file downloaded from [yiiframework.com](http://www.yiiframework.com/download/) to
-a directory named `advanced` that is directly under the Web root.
-
-Then follow the instructions given in "GETTING STARTED".
-
-
-### Install via Composer
-
-If you do not have [Composer](http://getcomposer.org/), you may install it by following the instructions
-at [getcomposer.org](http://getcomposer.org/doc/00-intro.md#installation-nix).
-
-You can then install the application using the following command:
-
-~~~
-php composer.phar global require "fxp/composer-asset-plugin:1.0.0-beta2"
-php composer.phar create-project --prefer-dist --stability=dev yiisoft/yii2-app-advanced advanced
-~~~
-
-
-GETTING STARTED
----------------
-
-After you install the application, you have to conduct the following steps to initialize
-the installed application. You only need to do these once for all.
-
-1. Run command `init` to initialize the application with a specific environment.
-2. Create a new database and adjust the `components['db']` configuration in `common/config/main-local.php` accordingly.
-3. Apply migrations with console command `yii migrate`. This will create tables needed for the application to work.
-4. Set document roots of your Web server:
-
-- for frontend `/path/to/yii-application/frontend/web/` and using the URL `http://frontend/`
-- for backend `/path/to/yii-application/backend/web/` and using the URL `http://backend/`
-
-To login into the application, you need to first sign up, with any of your email address, username and password.
-Then, you can login into the application with same email address and password at any time.
