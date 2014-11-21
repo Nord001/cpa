@@ -44,10 +44,6 @@ class RedirectProcess {
 				->setSystem($this->getOffer()['system'], $params)
 				->getURL();
 		}
-		echo "<pre>";
-		print_r($this->_url);
-		echo "</pre>";
-		die();
 		return $this->_url;
 	}
 
