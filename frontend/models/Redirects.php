@@ -14,6 +14,7 @@ use yii\db\ActiveRecord;
  * @property string  $date_redirected
  * @property string  $ip
  * @property string  $user_agent
+ * @property string  $click_id
  */
 class Redirects extends ActiveRecord {
 
@@ -29,10 +30,10 @@ class Redirects extends ActiveRecord {
 	 */
 	public function rules () {
 		return [
-			[['system', 'offer_id'], 'required'],
+			[['system', 'offer_id', 'click_id'], 'required'],
 			[['system', 'offer_id'], 'integer'],
 			[['date_redirected'], 'safe'],
-			[['ip', 'user_agent'], 'string', 'max' => 255]
+			[['ip', 'user_agent','click_id'], 'string', 'max' => 255]
 		];
 	}
 
@@ -47,6 +48,7 @@ class Redirects extends ActiveRecord {
 			'date_redirected' => 'Date Redirected',
 			'ip'              => 'Ip',
 			'user_agent'      => 'User Agent',
+			'click_id'        => 'ID перехода',
 		];
 	}
 
