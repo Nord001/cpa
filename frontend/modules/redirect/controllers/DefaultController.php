@@ -3,14 +3,14 @@
 namespace app\modules\redirect\controllers;
 
 use app\modules\redirect\components\Errors;
-use app\modules\redirect\components\RedirectProcess;
+use app\modules\redirect\components\Redirect;
 use yii\web\Controller;
 
 class DefaultController extends Controller {
 
 	public function actionIndex () {
 		try {
-			$link = (new RedirectProcess)
+			$link = (new Redirect)
 				->setParams()
 				->setLog()
 				->getURL();

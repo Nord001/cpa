@@ -10,7 +10,7 @@ namespace app\modules\redirect\components;
 use app\models\Offers;
 use app\models\Redirects;
 
-class RedirectProcess {
+class Redirect {
 
 	private $_params = [
 		'pubid'   => false,
@@ -27,6 +27,9 @@ class RedirectProcess {
 	private $_offer;
 
 	public function setParams () {
+		/**
+		 * TODO: вынести отсюда параметры в контроллер
+		 */
 		foreach($this->_params as $key => $value) {
 			if(\yii::$app->request->get($key)) {
 				$this->_params[$key] = \yii::$app->request->get($key);
@@ -44,6 +47,10 @@ class RedirectProcess {
 				->setSystem($this->getOffer()['system'], $params)
 				->getURL();
 		}
+		echo "<pre>";
+		print_r($this->_url);
+		echo "</pre>";
+		die();
 		return $this->_url;
 	}
 
