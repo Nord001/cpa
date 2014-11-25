@@ -146,10 +146,7 @@ class SiteController extends Controller {
 				Yii::$app->getSession()->setFlash('success', 'Проверьте ваш e-mail для дальнейших инструкций.');
 				return $this->goHome();
 			} else {
-				Yii::$app->getSession()->setFlash(
-					'error',
-					'Извините, мы не можем сбросить пароль по указанному e-mail.'
-				);
+				Yii::$app->getSession()->setFlash('error', 'Извините, мы не можем сбросить пароль по указанному e-mail.');
 			}
 		}
 		return $this->render(
