@@ -4,9 +4,9 @@ namespace frontend\controllers;
 use app\models\forms\SignupForm;
 use Yii;
 use common\models\forms\LoginForm;
-use frontend\models\PasswordResetRequestForm;
-use frontend\models\ResetPasswordForm;
-use frontend\models\ContactForm;
+use frontend\models\forms\PasswordResetRequestForm;
+use frontend\models\forms\ResetPasswordForm;
+use frontend\models\forms\ContactForm;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
@@ -27,11 +27,13 @@ class SiteController extends Controller {
 				'class' => AccessControl::className(),
 				'only'  => [
 					'logout',
-					'signup'
+					'signup',
+					'request-password-reset',
+					'reset-password',
 				],
 				'rules' => [
 					[
-						'actions' => ['signup'],
+						'actions' => ['signup', 'request-password-reset', 'reset-password'],
 						'allow'   => true,
 						'roles'   => ['?'],
 					],
@@ -141,17 +143,17 @@ class SiteController extends Controller {
 		$model = new PasswordResetRequestForm();
 		if ($model->load(Yii::$app->request->post()) && $model->validate()) {
 			if ($model->sendEmail()) {
-				Yii::$app->getSession()->setFlash('success', 'Check your email for further instructions.');
+				Yii::$app->getSession()->setFlash('success', 'Проверьте ваш e-mail для дальнейших инструкций.');
 				return $this->goHome();
 			} else {
 				Yii::$app->getSession()->setFlash(
 					'error',
-					'Sorry, we are unable to reset password for email provided.'
+					'Извините, мы не можем сбросить пароль по указанному e-mail.'
 				);
 			}
 		}
 		return $this->render(
-			'requestPasswordResetToken',
+			'requestPasswordReset',
 			[
 				'model' => $model,
 			]
@@ -165,7 +167,7 @@ class SiteController extends Controller {
 			throw new BadRequestHttpException($e->getMessage());
 		}
 		if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-			Yii::$app->getSession()->setFlash('success', 'New password was saved.');
+			Yii::$app->getSession()->setFlash('success', 'Новый пароль был сохранен.');
 			return $this->goHome();
 		}
 		return $this->render(

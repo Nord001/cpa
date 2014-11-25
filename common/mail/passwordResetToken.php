@@ -7,8 +7,8 @@ use yii\helpers\Html;
 $resetLink = Yii::$app->urlManager->createAbsoluteUrl(['site/reset-password', 'token' => $user->password_reset_token]);
 ?>
 
-Hello <?= Html::encode($user->username) ?>,
+Здравствуйте, <?= Html::encode($user->username) ?>,
 
-Follow the link below to reset your password:
+Проследуйте по указанной ниже ссылке, чтобы сбросить пароль:
 
 <?= Html::a(Html::encode($resetLink), $resetLink) ?>
