@@ -8,6 +8,7 @@ use frontend\models\forms\PasswordResetRequestForm;
 use frontend\models\forms\ResetPasswordForm;
 use frontend\models\forms\ContactForm;
 use yii\base\InvalidParamException;
+use yii\helpers\Json;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -33,7 +34,11 @@ class SiteController extends Controller {
 				],
 				'rules' => [
 					[
-						'actions' => ['signup', 'request-password-reset', 'reset-password'],
+						'actions' => [
+							'signup',
+							'request-password-reset',
+							'reset-password'
+						],
 						'allow'   => true,
 						'roles'   => ['?'],
 					],
@@ -146,7 +151,10 @@ class SiteController extends Controller {
 				Yii::$app->getSession()->setFlash('success', 'Проверьте ваш e-mail для дальнейших инструкций.');
 				return $this->goHome();
 			} else {
-				Yii::$app->getSession()->setFlash('error', 'Извините, мы не можем сбросить пароль по указанному e-mail.');
+				Yii::$app->getSession()->setFlash(
+					'error',
+					'Извините, мы не можем сбросить пароль по указанному e-mail.'
+				);
 			}
 		}
 		return $this->render(
@@ -173,5 +181,59 @@ class SiteController extends Controller {
 				'model' => $model,
 			]
 		);
+	}
+
+	public function actionVk () {
+		return $this->render('vk');
+	}
+
+	/**
+	 * TODO: https://vk.com/dev/methods
+	 */
+	public function actionCode () {
+		$filePath = \yii::$app->basePath.DIRECTORY_SEPARATOR.'access.txt';
+		if(file_exists($filePath)){
+			$arr = file_get_contents($filePath);
+			$arr = Json::decode($arr);
+		} else {
+			$arr = [];
+			$result = $this->get_web_page('https://oauth.vk.com/access_token?client_id=4651851&client_secret=tTo5Y2mjIu1y3Qu98kWX&code='.\yii::$app->request->get('code').'&redirect_uri=http://cpa/site/code');
+			$result = Json::decode($result);
+			$arr[] = $result;
+			file_put_contents($filePath, Json::encode($arr));
+		}
+		header("Content-Type: text/html; charset=utf-8");
+		$token = $arr[0]['access_token'];
+		$result = $this->getMessages($arr[0]['access_token']);
+		$result = Json::decode($result, true);
+		$result = $this->sendMessage($arr[0]['access_token'], 'Тест', 38064385);
+		echo "<pre>";
+		print_r($result);
+		echo "</pre>";
+		die();
+
+	}
+	public function getFriends ($token) {
+		return $this->get_web_page("https://api.vk.com/method/fiends.get?&access_token=".$token);
+	}
+	public function getMessages ($token) {
+		return $this->get_web_page("https://api.vk.com/method/messages.get?&access_token=".$token);
+	}
+
+	public function get_web_page ($url) {
+		$ch = curl_init();
+		curl_setopt ($ch, CURLOPT_URL, $url);
+		curl_setopt ($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt ($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt ($ch, CURLOPT_FOLLOWLOCATION , 1);
+		$result = curl_exec($ch);
+		curl_close($ch);
+
+		return $result;
+	}
+
+	private function sendMessage ($access_token, $message, $user_id) {
+		$url = "https://api.vk.com/method/messages.send?user_id=$user_id&message=$message&access_token=".$access_token;
+		return $this->get_web_page($url);
 	}
 }
