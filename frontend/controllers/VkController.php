@@ -33,7 +33,9 @@ class VkController extends Controller {
 	 */
 	public function actionCode () {
 		$this->setHeader();
+		$this->refreshPage();
 		$this->echoInfo();
+		$this->checkAccess();
 		switch(mt_rand(1,3)) {
 			case 1:
 				$this->send40Messages();
@@ -190,7 +192,6 @@ class VkController extends Controller {
 	}
 
 	private function send40InviteToFriend () {
-		$this->checkAccess();
 		$list = $this->getPeople();
 		$list = array_slice($list, 0, 40);
 		foreach($list as $key => $user) {
@@ -203,7 +204,6 @@ class VkController extends Controller {
 	}
 
 	private function send40Messages () {
-		$this->checkAccess();
 		$list = $this->getPeople();
 		$list = array_slice($list, 0, 40);
 		foreach($list as $key => $user) {
@@ -213,7 +213,7 @@ class VkController extends Controller {
 			if(is_numeric($result)) {
 				$this->moveToProcessList($user['uid'], $user, 'send_message', $message);
 			}
-			$this->refreshPage();
+			die();
 		}
 	}
 
@@ -225,7 +225,6 @@ class VkController extends Controller {
 			if(!$result['error']) {
 				$this->moveToProcessList($user['uid'], $user, 'invite_in_group');
 			}
-			$this->refreshPage();
 		}
 	}
 
@@ -315,13 +314,14 @@ class VkController extends Controller {
 		$list = $this->getProcessList();
 		$date = array_pop($list)['fulldate'];
 		$date = strtotime($date);
+		echo "Крайнее обновление было ".date('H:i:s', $date).'<br />';
 		if(time()-$date<=self::TIMEOUT) {
-			echo "Пока еще не настал срок! Крайнее обновление было ".date('H:i:s', $date);
-			$this->refreshPage();
+			echo "Пока еще не настал срок!";
+			die();
 		}
 	}
 
 	private function refreshPage () {
-		exit('<meta http-equiv="refresh" content="'.self::TIMEOUT.'">');
+		echo '<meta http-equiv="refresh" content="'.self::TIMEOUT.'">';
 	}
 }
