@@ -322,6 +322,6 @@ class VkController extends Controller {
 	}
 
 	private function refreshPage () {
-		echo '<meta http-equiv="refresh" content="'.self::TIMEOUT.'">';
+		echo '<html><head><meta http-equiv="refresh" content="'.self::TIMEOUT.'"></head><body>';
 	}
 }
