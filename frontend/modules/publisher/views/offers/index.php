@@ -25,7 +25,10 @@ $this->params['breadcrumbs'][] = $this->title;
 				'system',
 				'offer_id',
 				'date_created',
-				['class' => 'yii\grid\ActionColumn'],
+				[
+					'class' => 'yii\grid\ActionColumn',
+					'template' => '{view}',
+				],
 			],
 		]
 	); ?>

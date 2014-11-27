@@ -297,9 +297,11 @@ class VkController extends Controller {
 		$result = [];
 		foreach($list as $item) {
 			if(!isset($result[$item['date']][$item['action']])) {
+				$result[$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')'] = 0;
 				$result[$item['date']][$item['action']] = 0;
 			}
 			$result[$item['date']][$item['action']]++;
+			$result[$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')']++;
 		}
 		foreach($result as $date => $items) {
 			echo "<h4>$date</h4>";
