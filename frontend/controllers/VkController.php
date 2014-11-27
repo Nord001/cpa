@@ -10,6 +10,8 @@ use yii\web\Controller;
  */
 class VkController extends Controller {
 
+	private $_token;
+	private $_results;
 	const CITY = 'Брянск';
 	const SEX = 1;  //пол, 1 — женщина, 2 — мужчина, 0 (по умолчанию) — любой.
 	const AGE_TO = 23;
@@ -17,15 +19,37 @@ class VkController extends Controller {
 	const GROUP_ID = 76257495;
 	const GROUP_NAME = 'Сарафанное радио';
 	const GROUP_URL = 'https://vk.com/safanbryansk';
-	const TIMEOUT = 180;
-	private $_token;
-	private $_results;
+	const TIMEOUT = 90;
 	const SORT_TYPE = 1; // 0 - по популярности, 1 - по дате регистрации
 	const OFFSET = 0; // 0 - по популярности, 1 - по дате регистрации
-	const COUNT = 1000; // 0 - по популярности, 1 - по дате регистрации
+	const COUNT = 1000;
+	private $_users;
+	private $_tokensList; // 0 - по популярности, 1 - по дате регистрации
 
 	public function actionVk () {
 		return $this->render('vk');
+	}
+
+	public function getUserByToken ($token) {
+		if(!$this->_users) {
+			$filename = 'users.txt';
+			$this->_users = $this->readFromFile($filename);
+			if(!$this->_users) {
+				$ids = [];
+				$tokensForUsers = [];
+				foreach($this->getAllTokens() as $token) {
+					$ids[] = $token['user_id'];
+					$tokensForUsers[$token['user_id']] = $token['access_token'];
+				}
+
+				$users = $this->getUser($ids)->getLastResult();
+				foreach($users as $item) {
+					$this->_users[$tokensForUsers[$item['uid']]] = $item['first_name'].' '.$item['last_name'];
+				}
+				$this->saveToFile($filename, $this->_users);
+			}
+		}
+		return $this->_users[$token];
 	}
 
 	/**
@@ -110,16 +134,20 @@ class VkController extends Controller {
 		return $result;
 	}
 
+	public function getAllTokens () {
+		$filePath = $this->getBasePath().'access.txt';
+		if (file_exists($filePath)) {
+			$this->_tokensList = Json::decode(file_get_contents($filePath));
+		} else {
+			throw new \Exception('Не найден файл с токеном.');
+		}
+		return $this->_tokensList;
+	}
+
 	public function getToken () {
 		if (!$this->_token) {
-			$filePath = $this->getBasePath().'access.txt';
-			if (file_exists($filePath)) {
-				$this->_token = file_get_contents($filePath);
-				$this->_token = Json::decode($this->_token);
-				$this->_token = $this->_token[0]['access_token'];
-			} else {
-				throw new \Exception('Не найден файл с токеном.');
-			}
+			$allTokens    = $this->getAllTokens();
+			$this->_token = $allTokens[mt_rand(0, sizeof($allTokens)-1)]['access_token'];
 		}
 		return $this->_token;
 	}
@@ -193,27 +221,25 @@ class VkController extends Controller {
 
 	private function send40InviteToFriend () {
 		$list = $this->getPeople();
-		$list = array_slice($list, 0, 40);
-		foreach($list as $key => $user) {
+		$list = array_slice($list, 0, 1);
+		foreach($list as $user) {
 			$result = $this->inviteToFriends($user['uid'],'')->getLastResult();
-			if(!$result['error']) {
+			if(is_numeric($result)) {
 				$this->moveToProcessList($user['uid'], $user, 'invite_in_friend');
 			}
-			die();
 		}
 	}
 
 	private function send40Messages () {
 		$list = $this->getPeople();
-		$list = array_slice($list, 0, 40);
-		foreach($list as $key => $user) {
+		$list = array_slice($list, 0, 1);
+		foreach($list as $user) {
 			$message = $this->generateMessage($user['uid']);
 			$result = $this->sendMessage($user['uid'], $message)->getLastResult();
 
 			if(is_numeric($result)) {
 				$this->moveToProcessList($user['uid'], $user, 'send_message', $message);
 			}
-			die();
 		}
 	}
 
@@ -238,6 +264,7 @@ class VkController extends Controller {
 		$arr[$id]['message'] = $message;
 		$arr[$id]['date'] = date('Y-m-d');
 		$arr[$id]['fulldate'] = date('Y-m-d H:i:s');
+		$arr[$id]['token'] = $this->getToken();
 		$this->saveProcessList($arr);
 	}
 
@@ -295,20 +322,35 @@ class VkController extends Controller {
 	private function echoInfo () {
 		$list = $this->getProcessList();
 		$result = [];
+		$byDate = [];
 		foreach($list as $item) {
-			if(!isset($result[$item['date']][$item['action']])) {
-				$result[$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')'] = 0;
-				$result[$item['date']][$item['action']] = 0;
+			if(!isset($result[$item['token']][$item['date']][$item['action']])) {
+				//$result[$item['token']][$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')'] = 0;
+				$byDate[$item['action'].' ('.date('d.m.Y H:00',strtotime($item['fulldate'])).')'] = 0;
+				$result[$item['token']][$item['date']][$item['action']] = 0;
 			}
-			$result[$item['date']][$item['action']]++;
-			$result[$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')']++;
+			$result[$item['token']][$item['date']][$item['action']]++;
+			//$result[$item['token']][$item['date']][$item['action'].' ('.date('H:00',strtotime($item['fulldate'])).')']++;
+			$byDate[$item['action'].' ('.date('d.m.Y H:00',strtotime($item['fulldate'])).')']++;
 		}
-		foreach($result as $date => $items) {
-			echo "<h4>$date</h4>";
-			foreach($items as $name=>$count) {
-				echo $name.': '.$count.'<br />';
+		ksort($byDate);
+		echo "<h3>По часам: </h3>";
+		foreach($byDate as $date => $forDate) {
+			echo $date.': '.$forDate.'<br />';
+		}
+		foreach($result as $token => $forToken) {
+			echo "<h3>".$this->getUserByToken($token)."</h3>";
+			foreach($forToken as $date => $items) {
+				echo "<h4>$date</h4>";
+				ksort($items);
+				foreach($items as $name=>$count) {
+					echo $name.': '.$count.'<br />';
+				}
 			}
 		}
+		echo "-------------------------------------------------------------------------------------<br />".
+				"Всего осталось для обработки: ".sizeof($this->getPeople())."<br />".
+				"Всего сделано действий: ".sizeof($this->getProcessList())."<br />";
 
 	}
 
