@@ -204,4 +204,12 @@ class User extends ActiveRecord implements IdentityInterface {
 	public function removePasswordResetToken () {
 		$this->password_reset_token = null;
 	}
+
+	public function isPublisher () {
+		return isset(\yii::$app->authManager->getRolesByUser($this->id)['publisher']);
+	}
+
+	public function isAdmin () {
+		return isset(\yii::$app->authManager->getRolesByUser($this->id)['admin']);
+	}
 }

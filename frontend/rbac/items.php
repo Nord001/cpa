@@ -10,5 +10,8 @@ return [
     ],
 	'admin' => [
 		'type' => Item::TYPE_ROLE,
+		'children' =>[
+			'publisher'
+		]
 	]
 ];

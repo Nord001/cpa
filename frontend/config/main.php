@@ -15,8 +15,8 @@ return [
 			'identityClass'   => 'common\models\User',
 			'enableAutoLogin' => true,
 		],
-		'authManager' => [
-			'class'        => 'yii\rbac\PhpManager',
+		'authManager'  => [
+			'class' => 'yii\rbac\PhpManager',
 		],
 		'log'          => [
 			'traceLevel' => YII_DEBUG
@@ -45,10 +45,13 @@ return [
 		],
 	],
 	'modules'             => [
-		'admin'    => [
+		'admin'     => [
 			'class' => 'app\modules\admin\Module',
 		],
-		'redirect' => [
+		'publisher' => [
+			'class' => 'app\modules\publisher\Module',
+		],
+		'redirect'  => [
 			'class' => 'app\modules\redirect\Module',
 		],
 	],
