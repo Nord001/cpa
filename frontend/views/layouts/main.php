@@ -46,9 +46,7 @@ AppAsset::register($this);
 					'url'   => ['/site/contact']
 				],
             ];
-			if(\yii::$app->user->identity->isPublisher()) {
-				$menuItems[] = ['label'=>'Личный кабинет', 'url'=>'/publisher/dashboard'];
-			}
+			
             if (Yii::$app->user->isGuest) {
                 $menuItems[] = ['label' => 'Регистрация', 'url' => ['/site/signup']];
                 $menuItems[] = ['label' => 'Вход', 'url' => ['/site/login']];

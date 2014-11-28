@@ -7,4 +7,4 @@
  */
 
 ?>
-<a href="https://oauth.vk.com/authorize?client_id=4651851&scope=offline,group,photos,wall,messages,friends&redirect_uri=https://oauth.vk.com/blank.html&response_type=token&v=5.27">Вход</a>
+<a href="https://oauth.vk.com/authorize?client_id=4651851&scope=offline,group,photos,wall,messages,friends,auth&redirect_uri=https://oauth.vk.com/blank.html&response_type=token&v=5.27">Вход</a>

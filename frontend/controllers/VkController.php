@@ -1,6 +1,8 @@
 <?php
 namespace frontend\controllers;
-
+// {"access_token":"4b69417bbf945454bfdca4ea5eaec9480857cb21a32140db1d7a59b2cf52a37cde7e4b61a1511973f9c8b","expires_in":0,"user_id":16602027},
+use app\components\VKCommands;
+use app\components\VKUser;
 use Yii;
 use yii\helpers\Json;
 use yii\web\Controller;
@@ -19,15 +21,65 @@ class VkController extends Controller {
 	const GROUP_ID = 76257495;
 	const GROUP_NAME = 'Сарафанное радио';
 	const GROUP_URL = 'https://vk.com/safanbryansk';
-	const TIMEOUT = 90;
+	const TIMEOUT = 75;
 	const SORT_TYPE = 1; // 0 - по популярности, 1 - по дате регистрации
 	const OFFSET = 0; // 0 - по популярности, 1 - по дате регистрации
 	const COUNT = 1000;
 	private $_users;
 	private $_tokensList; // 0 - по популярности, 1 - по дате регистрации
 
+	public function actionSignUpUser () {
+		$this->setHeader();
+		$result = (new VKUser(new VKCommands()))
+			->registrationUser();
+		echo "<pre>";
+		print_r($result);
+		echo "</pre>";
+		die();
+	}
+	public function actionConfirmUser () {
+		$this->setHeader();
+		$result = (new VKUser(new VKCommands()))
+			->confirmUser();
+		echo "<pre>";
+		print_r($result);
+		echo "</pre>";
+		die();
+//			->setProfileInfo()
+//					->fillWall()
+//					->downloadPhotos()
+//					->setMainPhoto()
+//					->moveToGetToken();
+	}
+
 	public function actionVk () {
 		return $this->render('vk');
+	}
+
+	public function actionSetUser () {
+		$this->setHeader();
+		$token = '88d3ea615c20d6ed17b9f5ae93dd068eb88321498f5087374dc6f1d2bc91c25bbc039a289d5d9d9dc70d1';
+		$arr = $this->getUser(mt_rand(100000, 20000000))->getLastResult()[0];
+		$this->accountSaveProfileInfo($arr, true, $token)->echoLastResult();
+	}
+
+	public function actionFill () {
+		set_time_limit(200);
+		$this->setHeader();
+		$token = '88d3ea615c20d6ed17b9f5ae93dd068eb88321498f5087374dc6f1d2bc91c25bbc039a289d5d9d9dc70d1';
+
+		$result = $this->wallGet($token, true, $token)->getLastResult();
+		foreach($result as $key=>$item) {
+			if(!is_array($item)) {
+				unset($result[$key]);
+			} else if($item['post_type']=='copy') {
+				unset($result[$key]);
+			}
+		}
+		foreach($result as $post) {
+			$this->wallRepost($post['id'], $token);
+			sleep(22);
+		}
 	}
 
 	public function getUserByToken ($token) {
@@ -60,11 +112,15 @@ class VkController extends Controller {
 		$this->refreshPage();
 		$this->echoInfo();
 		$this->checkAccess();
-		switch(mt_rand(1,3)) {
+		switch(mt_rand(1,6)) {
 			case 1:
+			case 2:
+			case 3:
+			case 4:
 				$this->send40Messages();
 				break;
-			case 2:
+			case 5:
+			case 6:
 				$this->send40InviteToFriend();
 				break;
 		}
@@ -161,8 +217,8 @@ class VkController extends Controller {
 		return $result;
 	}
 
-	private function getBaseURL ($command) {
-		return "https://api.vk.com/method/".$command."?&access_token=".$this->getToken();
+	private function getBaseURL ($command, $token = false) {
+		return "https://api.vk.com/method/".$command."?&access_token=".($token?$token:$this->getToken());
 	}
 
 	public function getBasePath () {
@@ -190,6 +246,36 @@ class VkController extends Controller {
 
 	private function inviteToGroup ($user_id) {
 		$url              = $this->getBaseURL('groups.invite').'&user_id='.$user_id.'&group_id='.self::GROUP_ID;
+		$this->_results[] = $this->runCommand($url);
+		return $this;
+	}
+
+
+
+	private function accountSaveProfileInfo ($arr, $token) {
+		$arr = [
+			'sex' => 1,
+			'relation' => $arr['relation'],
+			'bdate' => $arr['relation'],
+			'bdate_visibility' => 2,
+			'home_town'=>self::CITY,
+			'city_id' => 33,
+
+		];
+		$url              = $this->getBaseURL('account.saveProfileInfo', $token).'&'.http_build_query($arr);
+		$this->_results[] = $this->runCommand($url);
+		return $this;
+
+	}
+
+	private function wallRepost ($id, $token) {
+		$url              = $this->getBaseURL('wall.repost', $token).'&object=wall-'.self::GROUP_ID.'_'.$id;
+		$this->_results[] = $this->runCommand($url);
+		return $this;
+	}
+
+	private function wallGet ($token) {
+		$url              = $this->getBaseURL('wall.get', $token).'&count=100&owner_id=-'.self::GROUP_ID;
 		$this->_results[] = $this->runCommand($url);
 		return $this;
 	}
